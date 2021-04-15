@@ -1,5 +1,5 @@
 library(tidyverse)
-library(skimr)
+library(usmap)
 
 post_offices <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-13/post_offices.csv')
 
@@ -37,13 +37,19 @@ po %>%
   print(n = Inf)
 
 
+
 # Alright, not so bad-- let's fix the original data frame
+# Have to explicitly allow for NAs, bc they would be excluded otherwise
 post_offices <- post_offices %>%
-  filter(established >= 1639 & discontinued <= 2021)
+  filter(
+    (established >= 1639 & discontinued <= 2021) |
+      is.na(established) | is.na(discontinued)
+    )
 
 # And reassign our location-less data frame
 po <- post_offices %>%
   select(name, state, county1, established, discontinued, duration)
+
 
 # Oldest post office per state?
 po %>%
@@ -52,5 +58,4 @@ po %>%
   arrange(established) %>%
   print(n = Inf)
 
-# Where did my 1639 Boston post office go
-# Missing like 30000 records, I messed up somewhere
+# This is still giving me triple digit established years!
