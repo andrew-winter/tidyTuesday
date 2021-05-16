@@ -19,6 +19,10 @@ broadband
 
 search_county('Los Angeles', 'CA')$zipcode
 
+
+
+
+
 # I want to programatically look at counties per each row
 # and make a data frame out of all zip codes in a certain county
 
@@ -26,23 +30,51 @@ search_county('Los Angeles', 'CA')$zipcode
 try <- broadband %>%
   filter(str_detect(county_name, 'County')) %>%
   mutate(county_short = str_replace(county_name, ' County', ''),
-         # zip = search_county(county_short, st)
-         ) # do something
+         # Can do something else here to raw broadband df
+         )
+
+# Configuring a placeholder error data frame in case mapping the
+# search_county function ddoesn't find a match
+error_df <- search_county('Los Angeles', 'CA')[1,] %>%
+  mutate(zipcode = '0', zipcode_type = 'Error: search_county',
+         major_city = 'Error: search_county',
+         post_office_city = 'Error: search_county',
+         county = 'Error: search_county', state = 'Error: search_county',
+         lat = 0, lng = 0)
+
 
 df_possib1 <- map2(try$county_short, try$st, 
      possibly(~ search_county(.x, .y), 
-              search_county('Los Angeles', 'CA')
+              error_df
               ) # otherwise
      )
 
 df_possib1
 
-df_possib1 %>%
+df_bound <- df_possib1 %>%
   bind_rows(.id = 'id')
 
 
+df_bound %>%
+  select(county)
 
-search_county('Los Angeles', 'CA')
+
+zips_joined <- df_bound %>%
+  inner_join(try, by = c('county' = 'county_name'))
+
+zips_joined
+
+# The inner join gets rid of the original county_name column
+# For some reason keeps county column-- sitll have county_short
+zips_joined %>%
+  select(st, county_id, avail, usage, county_short, 
+         zipcode, lat, lng, population, major_city, zipcode_type,
+         common_city_list, county)
+
+
+# I don't think I actually need this huge data frame
+# There's probably a better way to use the zip code information per county
+
 
 
 
