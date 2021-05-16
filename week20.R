@@ -72,10 +72,13 @@ zips_joined %>%
          common_city_list, county)
 
 
+
+
 # I don't think I actually need this huge data frame
 # There's probably a better way to use the zip code information per county
 
-
+# I just realized I joined only on county names-- probably puts
+# counties together with the same name from different states-- whoops
 
 
 
