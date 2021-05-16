@@ -5,7 +5,9 @@ broadband_raw <- readr::read_csv('https://raw.githubusercontent.com/rfordatascie
 
 
 broadband <- broadband_raw %>%
-  rename_with(~ str_replace_all(., ' ', '_') %>% tolower) %>%
+  rename_with(
+    ~ str_replace_all(., ' ', '_') %>%
+      tolower) %>%
   rename(avail = broadband_availability_per_fcc, usage = broadband_usage)
 
 broadband
@@ -21,6 +23,32 @@ search_county('Los Angeles', 'CA')$zipcode
 # and make a data frame out of all zip codes in a certain county
 
 # I'll filter out county, and then remove the word
-broadband %>%
+try <- broadband %>%
   filter(str_detect(county_name, 'County')) %>%
-  mutate(county_name = county_name) # do something
+  mutate(county_short = str_replace(county_name, ' County', ''),
+         # zip = search_county(county_short, st)
+         ) # do something
+
+df_possib1 <- map2(try$county_short, try$st, 
+     possibly(~ search_county(.x, .y), 
+              search_county('Los Angeles', 'CA')
+              ) # otherwise
+     )
+
+df_possib1
+
+df_possib1 %>%
+  bind_rows(.id = 'id')
+
+
+
+search_county('Los Angeles', 'CA')
+
+
+
+
+str_sub(broadband$county_name)
+
+str_detect(broadband$county_name, 'County')
+
+str_replace(broadband$county_name, ' County', '')
