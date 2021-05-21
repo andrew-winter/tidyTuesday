@@ -12,83 +12,68 @@ US_surveys <- survey %>%
 
 US_surveys
 
-US_surveys %>%
-  filter(annual_salary < 245000) %>%
-  ggplot() + geom_histogram(aes(annual_salary, fill = country))
+# US_surveys %>%
+#  filter(annual_salary < 245000) %>%
+#  ggplot() + geom_histogram(aes(annual_salary, fill = country))
 
 
 
 
 
+
+
+
+
+
+str_detect_low <- function(str, pat, neg = FALSE) {
+  # wrapper function for str_detect, pseudo case-insensitive
+  # just supply a lower case pattern to the lower case string(s)
+  
+  str_detect(tolower(str), pat, negate = neg)
+}
 
 
 US_surveys_alt <- US_surveys %>%
   mutate(
     new_category = case_when(
-      str_detect(industry, 'educ') ~ 'Education',
-      str_detect(industry, 'resea') ~ 'Research',
-      str_detect(tolower(industry), tolower('health')) ~ 'Health',
+      str_detect_low(industry, 'educ') ~ 'Education',
+      str_detect_low(industry, 'resea') ~ 'Research',
+      str_detect_low(industry, 'health') ~ 'Health',
+      str_detect_low(industry, 'marketing') | 
+        str_detect_low(industry, 'media ') ~ 'Advertising, Marketing, & Media',
+      str_detect_low(industry, 'aero') ~ 'Aerospace',
+      str_detect_low(industry, 'lib') ~ 'Libraries',
+      str_detect_low(industry, 'admin') | 
+        str_detect_low(industry, 'gov') ~ 'Administration & Government',
       TRUE ~ industry
     )
   )
 
-US_surveys_alt %>%
-  count(new_category, sort = TRUE)
-
-
-US_surveys_alt2 <- US_surveys_alt %>%
-  filter(str_detect(tolower(industry), tolower('health')))
-
-
-
-US_surveys_alt2 %>%
-  filter(str_detect(tolower(industry), tolower('health'))) %>%
-  count(industry, sort = TRUE)
-
-
-
-
-
-str_detect_case <- function(s, p, n = FALSE) str_detect(s, p, negate = n)
-
-
-US_surveys_alt3 <- US_surveys %>%
-  mutate(
-    new_category = case_when(
-      str_detect(industry, 'educ') ~ 'Education',
-      str_detect(industry, 'resea') ~ 'Research',
-      str_detect_case(industry, 'health') ~ 'Health',
-      TRUE ~ industry
-    )
-  )
-
-US_surveys_alt3 %>%
-  count(new_category, sort = TRUE)
-
-
-# Not sure to what degree I have to use tolower()
-
-
-
-US_surveys_alt %>%
-  filter(str_detect(tolower(industry), tolower('resea'))) %>%
-  count(industry, sort = TRUE) %>%
-  print(n = 50)
-
-
+US_surveys_alt
 
 US_surveys_alt %>%
   count(new_category, sort = TRUE) %>%
   print(n = 200)
 
 
+US_surveys_alt %>%
+  select(industry, new_category) %>%
+  filter(str_detect_low(new_category, 'gov')) %>%
+  count(new_category, sort = TRUE) %>%
+  print(n = 50)
 
-colnames(survey)
 
-survey %>%
-  count(industry, sort = TRUE)
 
-survey %>%
-  count(gender, race, sort = TRUE)
+survey_small <-  US_surveys_alt %>%
+  count(new_category) %>%
+  filter(n < 10)
 
-skim(survey)
+
+survey_big <- US_surveys_alt %>%
+  count(new_category) %>%
+  filter(n >= 10)
+
+
+survey_small
+
+survey_big
